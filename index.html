@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>思辨之刃：自相矛盾</title>
+  
+  <!-- 引入 Tailwind CSS 進行排版與樣式設計 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 引入 Lucide Icons 進行圖標渲染 -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* 自定義動畫 */
+    @keyframes bounce-short {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    .animate-bounce-short {
+      animation: bounce-short 0.4s ease-in-out 2;
+    }
+    
+    @keyframes fade-in-up {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in-up {
+      animation: fade-in-up 0.4s ease-out forwards;
+    }
+
+    /* 確保背景紋理自然 */
+    body {
+      background-image: url('https://www.transparenttextures.com/patterns/rice-paper-2.png');
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#f4ebd0] text-[#3e2723] font-sans flex flex-col items-center py-10 px-4 sm:px-8">
+
+  <!-- ================= 主遊戲畫面 ================= -->
+  <div id="game-container" class="max-w-4xl w-full flex flex-col">
+    
+    <!-- Header -->
+    <div class="flex justify-between items-end border-b-2 border-[#8d6e63] pb-4 mb-8">
+      <div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold flex items-center gap-3 text-[#4e342e]">
+          <i data-lucide="swords" class="w-8 h-8 sm:w-10 sm:h-10 text-[#8d6e63]"></i>
+          思辨之刃：自相矛盾
+        </h1>
+        <p class="text-sm sm:text-base text-[#5d4037] mt-2 font-medium">尋找邏輯破綻，以子之矛攻子之盾。</p>
+      </div>
+      <div class="text-right">
+        <span id="stage-counter" class="text-sm font-bold text-[#8d6e63] bg-[#efe3c2] px-3 py-1 rounded-full border border-[#d7ccc8]">
+          關卡 1 / 3
+        </span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      
+      <!-- 商人區塊 -->
+      <div class="md:col-span-1 flex flex-col items-center">
+        <div class="w-32 h-32 bg-[#d7ccc8] rounded-full border-4 border-[#8d6e63] flex items-center justify-center mb-4 overflow-hidden shadow-inner relative">
+           <img id="merchant-image" src="" alt="Merchant" class="w-24 h-24" />
+        </div>
+        <h2 id="merchant-name" class="text-xl font-bold bg-[#8d6e63] text-[#f4ebd0] px-4 py-1 rounded-md mb-4 shadow-md">
+          商人名稱
+        </h2>
+        <div class="bg-[#faf5e6] p-4 rounded-lg border border-[#d7ccc8] relative shadow-sm text-center w-full">
+          <div class="absolute w-4 h-4 bg-[#faf5e6] border-t border-l border-[#d7ccc8] transform rotate-45 -top-2 left-1/2 -translate-x-1/2"></div>
+          <p id="merchant-intro" class="text-sm italic font-medium leading-relaxed">
+            「商人開場白」
+          </p>
+        </div>
+      </div>
+
+      <!-- 語句選擇與操作區塊 -->
+      <div class="md:col-span-2 flex flex-col">
+        <h3 class="text-lg font-bold mb-3 flex items-center gap-2 text-[#4e342e]">
+          <i data-lucide="shield" class="w-5 h-5 text-[#8d6e63]"></i>
+          請選擇兩句<span class="text-red-700">在邏輯上互相衝突</span>的話語：
+        </h3>
+        
+        <div id="statements-container" class="flex flex-col gap-3 flex-grow">
+          <!-- 語句按鈕將由 JS 動態生成 -->
+        </div>
+
+        <!-- 動作與回饋區 -->
+        <div id="action-area" class="mt-6 flex flex-col items-center justify-center min-h-[120px]">
+          <!-- 按鈕與回饋訊息將由 JS 動態生成 -->
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部說明文字 -->
+  <div id="footer-text" class="max-w-3xl w-full mt-12 text-center text-sm text-[#795548] border-t border-[#d7ccc8] pt-4">
+    <p>請點擊兩句互相矛盾的陳述，然後點擊「發起質疑」。找出它們在邏輯上無法共存的破綻！</p>
+  </div>
+
+  <!-- ================= 結算畫面 ================= -->
+  <div id="end-container" class="max-w-2xl w-full bg-[#faf5e6] rounded-xl shadow-2xl p-8 border-2 border-[#8d6e63] text-center hidden my-auto">
+    <i data-lucide="book-open" class="w-20 h-20 mx-auto text-[#5d4037] mb-6"></i>
+    <h1 class="text-4xl font-bold mb-4 text-[#4e342e]">大獲全勝！邏輯大師</h1>
+    <p class="text-lg leading-relaxed mb-6 text-[#5d4037] text-left">
+      你成功揭穿了所有商人的謊言！<br/><br/>
+      在形式邏輯中，這被稱為<strong>「矛盾律」（Law of Non-Contradiction）</strong>。<br/>
+      它的核心概念是：對於任何命題 P，P 和非 P 不可能同時為真。也就是說，事物不能同時具備一種屬性，又完全不具備這種屬性。<br/><br/>
+      兩千多年前的韓非子，正是透過「矛與盾」的故事，生動地向我們展示了這個深刻的邏輯學原理。
+    </p>
+    <button 
+      onclick="restartGame()"
+      class="flex items-center justify-center mx-auto space-x-2 bg-[#5d4037] hover:bg-[#4e342e] text-[#f4ebd0] px-6 py-3 rounded-lg font-bold transition-colors shadow-lg"
+    >
+      <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+      <span>再玩一次</span>
+    </button>
+  </div>
+
+  <!-- ================= 遊戲邏輯腳本 ================= -->
+  <script>
+    // 遊戲關卡資料
+    const STAGES = [
+      {
+        id: 1,
+        title: "初出茅廬：奇妙的光與暗",
+        merchant: "西域商人",
+        intro: "來看看我的奇珍異寶！我這裡有兩樣神奇的寶物，保證讓你大開眼界！",
+        statements: [
+          { id: 's1', text: "這顆『極晝夜明珠』，只要在任何沒有光線的暗處，都會強制發出耀眼的強光。" },
+          { id: 's2', text: "這個『絕對暗箱』，能完美隔絕任何光線，裡面永遠維持絕對的黑暗。" },
+          { id: 's3', text: "這個『辟邪玉珮』，只要戴在身上，就能保佑你逢凶化吉，財源廣進。" }
+        ],
+        solution: ['s1', 's2'],
+        successMessage: "你冷笑一聲問道：『如果把這顆一定會發光的夜明珠，放進永遠絕對黑暗的暗箱裡，會發生什麼事？』西域商人頓時啞口無言。",
+        failureMessage: "這兩句話之間似乎並沒有直接的邏輯衝突，商人依然得意洋洋。再仔細想想！",
+        educational: "邏輯解析：如果『必然發光』與『絕對黑暗』同時存在於同一空間，就會產生邏輯悖論。"
+      },
+      {
+        id: 2,
+        title: "經典對決：楚人鬻矛與盾",
+        merchant: "楚國兵器商",
+        intro: "哼，剛才那個西域人只懂些小把戲。來看看我大楚國鍛造的頂級兵器！",
+        statements: [
+          { id: 'm1', text: "吾盾之堅，物莫能陷也。（我的盾堅固無比，天下沒有任何東西能刺穿它。）" },
+          { id: 'm2', text: "吾馬之快，日行千里，夜行八百。（我的寶馬速度極快，沒人能追得上。）" },
+          { id: 'm3', text: "吾矛之利，於物無不陷也。（我的矛鋒利極了，天下任何東西都能被它刺穿。）" }
+        ],
+        solution: ['m1', 'm3'],
+        successMessage: "你走上前，大聲問道：『以子之矛，陷子之盾，何如？』圍觀群眾哄堂大笑，楚國商人羞愧地收起攤子跑了。",
+        failureMessage: "馬跑得快和兵器鋒利、堅固之間並不衝突。請找出『必定會互相抵觸』的兩個宣告。",
+        educational: "韓非子《自相矛盾》：『不可陷之盾與無不陷之矛，不可同世而立。』這就是邏輯學中『矛盾律』的最經典體現。"
+      },
+      {
+        id: 3,
+        title: "終極試煉：煉丹士的萬能藥",
+        merchant: "雲遊煉丹士",
+        intro: "凡夫俗子們！這是我耗費畢生心血，用九九八十一天煉製而成的終極神藥！",
+        statements: [
+          { id: 'p1', text: "這瓶『化骨水』是天下最猛烈的萬物溶劑。" },
+          { id: 'p2', text: "為了方便攜帶，我把它裝在這個普通的木頭葫蘆瓶裡帶在身上。" },
+          { id: 'p3', text: "無論是什麼材質的實體物質，只要碰到這水，瞬間就會被完全溶解化為烏有。" }
+        ],
+        solution: ['p2', 'p3'],
+        successMessage: "你指著他腰間的葫蘆問：『既然任何實體物質都會被瞬間溶解，那你的木頭葫蘆瓶怎麼還好好的？』煉丹士滿頭大汗，當場被拆穿了騙局。",
+        failureMessage: "這藥水的名字（化骨）和它的威力（溶解萬物）並不衝突。請找出在現實物理邏輯上不可能共存的現象。",
+        educational: "邏輯解析：這被稱為『萬能溶劑悖論』。如果存在能溶解一切的溶劑，那麼就不可能存在能裝載它的容器。"
+      }
+    ];
+
+    // 遊戲狀態變數
+    let currentStageIndex = 0;
+    let selectedIds = [];
+    let gameState = 'playing'; // playing, success, failure, finished
+
+    // 初始化與更新 UI 的主函數
+    function updateUI() {
+      const gameContainer = document.getElementById('game-container');
+      const endContainer = document.getElementById('end-container');
+      const footerText = document.getElementById('footer-text');
+
+      if (gameState === 'finished') {
+        gameContainer.classList.add('hidden');
+        footerText.classList.add('hidden');
+        endContainer.classList.remove('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      gameContainer.classList.remove('hidden');
+      footerText.classList.remove('hidden');
+      endContainer.classList.add('hidden');
+
+      const stage = STAGES[currentStageIndex];
+
+      // 更新頭部資訊
+      document.getElementById('stage-counter').textContent = `關卡 ${currentStageIndex + 1} / ${STAGES.length}`;
+
+      // 更新商人資訊
+      document.getElementById('merchant-image').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${stage.merchant}&backgroundColor=d7ccc8`;
+      document.getElementById('merchant-name').textContent = stage.merchant;
+      document.getElementById('merchant-intro').textContent = `「${stage.intro}」`;
+
+      // 渲染選項
+      const statementsContainer = document.getElementById('statements-container');
+      statementsContainer.innerHTML = '';
+      
+      stage.statements.forEach(stmt => {
+        const isSelected = selectedIds.includes(stmt.id);
+        const btnClasses = isSelected 
+          ? 'bg-[#ffe0b2] border-[#e65100] transform scale-[1.02] shadow-md' 
+          : 'bg-[#faf5e6] border-[#d7ccc8] hover:border-[#8d6e63] hover:bg-[#f5ede3]';
+        
+        const circleClasses = isSelected
+          ? 'bg-[#e65100] border-[#e65100]'
+          : 'border-[#8d6e63]';
+          
+        const textClasses = isSelected ? 'text-[#e65100]' : 'text-[#4e342e]';
+        const dotHtml = isSelected ? '<div class="w-2 h-2 bg-white rounded-full"></div>' : '';
+
+        const buttonHtml = `
+          <button
+            onclick="handleStatementClick('${stmt.id}')"
+            class="text-left p-4 rounded-lg border-2 transition-all duration-200 shadow-sm ${btnClasses}"
+          >
+            <div class="flex items-start gap-3">
+              <div class="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full border flex items-center justify-center ${circleClasses}">
+                ${dotHtml}
+              </div>
+              <span class="text-base font-medium leading-relaxed ${textClasses}">
+                ${stmt.text}
+              </span>
+            </div>
+          </button>
+        `;
+        statementsContainer.innerHTML += buttonHtml;
+      });
+
+      // 渲染動作區塊
+      const actionArea = document.getElementById('action-area');
+      actionArea.innerHTML = '';
+
+      if (gameState === 'playing' || gameState === 'failure') {
+        const btnStateClasses = selectedIds.length === 2
+          ? 'bg-[#d32f2f] hover:bg-[#b71c1c] text-white cursor-pointer transform hover:-translate-y-1 shadow-md'
+          : 'bg-[#bcaaa4] text-[#eceff1] cursor-not-allowed opacity-70';
+        
+        const disabledAttr = selectedIds.length !== 2 ? 'disabled' : '';
+
+        let failureHtml = '';
+        if (gameState === 'failure') {
+          failureHtml = `
+            <div class="mt-4 p-3 bg-red-100 border border-red-300 text-red-800 rounded-lg flex items-start gap-2 w-full animate-bounce-short">
+              <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
+              <p class="text-sm font-medium">${stage.failureMessage}</p>
+            </div>
+          `;
+        }
+
+        actionArea.innerHTML = `
+          <div class="w-full flex flex-col items-center">
+            <button
+              onclick="handleChallenge()"
+              ${disabledAttr}
+              class="w-full sm:w-auto px-10 py-3 rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-2 ${btnStateClasses}"
+            >
+              <i data-lucide="swords" class="w-5 h-5"></i>
+              發起質疑！
+            </button>
+            ${failureHtml}
+          </div>
+        `;
+      } else if (gameState === 'success') {
+        const btnText = currentStageIndex < STAGES.length - 1 ? '前往下一個市場' : '查看最終評價';
+        
+        actionArea.innerHTML = `
+          <div class="w-full animate-fade-in-up">
+            <div class="bg-[#e8f5e9] border-2 border-[#4caf50] rounded-xl p-5 mb-4 shadow-lg">
+              <div class="flex items-start gap-3">
+                <i data-lucide="check-circle" class="w-6 h-6 text-[#2e7d32] flex-shrink-0 mt-1"></i>
+                <div>
+                  <h4 class="text-[#2e7d32] font-bold text-lg mb-2">質疑成功！</h4>
+                  <p class="text-[#1b5e20] mb-3 leading-relaxed">${stage.successMessage}</p>
+                  <div class="bg-[#c8e6c9] p-3 rounded text-sm text-[#1b5e20] font-medium border border-[#a5d6a7]">
+                    <i data-lucide="book-open" class="w-4 h-4 inline-block mr-1 mb-0.5 align-middle"></i>
+                    ${stage.educational}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              onclick="nextStage()"
+              class="w-full bg-[#2e7d32] hover:bg-[#1b5e20] text-white px-6 py-3 rounded-lg font-bold text-lg shadow-md transition-all flex items-center justify-center gap-2"
+            >
+              ${btnText}
+              <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </button>
+          </div>
+        `;
+      }
+
+      // 重新渲染 Lucide 圖標
+      lucide.createIcons();
+    }
+
+    // 處理選項點擊
+    window.handleStatementClick = function(id) {
+      if (gameState !== 'playing' && gameState !== 'failure') return;
+      
+      if (gameState === 'failure') {
+        gameState = 'playing';
+      }
+
+      if (selectedIds.includes(id)) {
+        selectedIds = selectedIds.filter(selectedId => selectedId !== id);
+      } else {
+        if (selectedIds.length < 2) {
+          selectedIds.push(id);
+        } else {
+          // 如果已經選了兩個，替換掉第一個選擇的
+          selectedIds = [selectedIds[1], id];
+        }
+      }
+      updateUI();
+    };
+
+    // 處理質疑邏輯
+    window.handleChallenge = function() {
+      if (selectedIds.length !== 2) return;
+
+      const stage = STAGES[currentStageIndex];
+      const isCorrect = selectedIds.includes(stage.solution[0]) && selectedIds.includes(stage.solution[1]);
+
+      if (isCorrect) {
+        gameState = 'success';
+      } else {
+        gameState = 'failure';
+      }
+      updateUI();
+    };
+
+    // 進入下一關
+    window.nextStage = function() {
+      if (currentStageIndex < STAGES.length - 1) {
+        currentStageIndex++;
+        selectedIds = [];
+        gameState = 'playing';
+      } else {
+        gameState = 'finished';
+      }
+      updateUI();
+    };
+
+    // 重新開始遊戲
+    window.restartGame = function() {
+      currentStageIndex = 0;
+      selectedIds = [];
+      gameState = 'playing';
+      updateUI();
+    };
+
+    // 初始載入
+    document.addEventListener('DOMContentLoaded', () => {
+      updateUI();
+    });
+
+  </script>
+</body>
+</html>
